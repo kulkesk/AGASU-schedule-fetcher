@@ -20,7 +20,7 @@ week_days_rus = [
 
 
 Pair = tp.Dict[str, tp.Union[str, dt.datetime, int]]  # Формат в котором возвращаются данные об парах
-# для большей информации об спецификации типов посмотрите документацию об модуле "typing"
+# для большей информации об работе библиотеке typing прошу посмотреть соответствующую документацию
 
 
 def grouping_by_days(schedule: tp.List[Pair]) -> tp.Dict[dt.datetime, Pair]:
@@ -28,12 +28,10 @@ def grouping_by_days(schedule: tp.List[Pair]) -> tp.Dict[dt.datetime, Pair]:
     Группирует уроки по дате
     Возвращает данные по шаблону: {dt.datetime: [Pair, ...], ...]
     """
-    # days = sorted(list([lesson.get("date") for lesson in schedule]))
     lessons_grouped_by_days = {}  # {dt.datetime: [lesson1, lesson2, lesson3]}
 
     # заполняем дни уроками:
     for lesson in schedule:
-        # pp(lessons_grouped_by_days)
         lesson_date = lesson.get("date")
         if lesson_date in lessons_grouped_by_days:
             lessons_grouped_by_days[lesson_date].append(lesson)
@@ -51,12 +49,16 @@ def grouping_by_days(schedule: tp.List[Pair]) -> tp.Dict[dt.datetime, Pair]:
 
 def remove_extra_spaces(text: str) -> str:
     """
-    Removes extra spaces between words
+    Удаляет лишние пробелы
+    Какой-то очень не умный человек решил использовать пробелы в ответе от api для форматинга
     """
     return ' '.join(text.split())
 
 
 def get_schedule_from_server() -> tp.List[Pair]:
+    """
+    Получаем данные с сервера АГАСУ и форматируем данные в нужные нам объекты для более лёгкой работы
+    """
 
     url = "https://api.xn--80aai1dk.xn--p1ai/api/schedule?"\
         "range=3&subdivision_cod=2&group_name=4562"
@@ -81,8 +83,10 @@ def get_schedule_from_server() -> tp.List[Pair]:
                 continue
 
             elif key == "pair":
+                # переводим текст с номером пары в число
                 lesson.update({key: int(value)})
                 continue
+
             lesson.update({key: remove_extra_spaces(value)})
     return schedule
 
@@ -98,11 +102,12 @@ def main():
     # сортируем пары по дням:
     schedule = grouping_by_days(schedule)
 
-    # делаем визуальные сепараторы между днями и парами
+    # выводим информацию на экран терминала:
+
+    #  делаем визуальные сепараторы между днями и парами
     separator_between_subjects = "-" * 10
     separator_between_days = "=" * 10
 
-    # выводим информацию на экран терминала:
     for day, lessons in schedule.items():
         print(separator_between_days, f"{week_days_rus[day.weekday()]}", separator_between_days, sep="\n")
         for lesson in lessons:
