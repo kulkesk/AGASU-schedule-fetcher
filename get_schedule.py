@@ -96,9 +96,11 @@ def main():
 
     parser = ap(description="Вывод расписания на эту и следующую неделю")
     ap.add_argument("--next_day", "-N",
-                    action="store_true", 
+                    action="store_true",
                     help="показать расписание на следующий день")
     args = parser.parse_args()
+
+    display_only_next_day: bool = args.next_day
 
     # получаем расписание с сервера:
     schedule = get_schedule_from_server()
