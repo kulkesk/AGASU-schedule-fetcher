@@ -20,11 +20,14 @@ week_days_rus = [
 ]
 
 
-Pair = tp.Dict[str, tp.Union[str, dt.datetime, int]]  # Формат в котором возвращаются данные об парах
+Pair = tp.Dict[str, tp.Union[str, dt.date, int]]  # Формат в котором возвращаются данные об парах
 # для большей информации об работе библиотеке typing прошу посмотреть соответствующую документацию
 
 
-def pretty_print_days(days: tp.Dict[dt.datetime, Pair]):
+def pretty_print_days(days: tp.Dict[dt.date, Pair]):
+    """
+    Выводит пары в виде таблицы
+    """
     separator_between_subjects = "-" * 10
     separator_between_days = "=" * 10
 
@@ -98,6 +101,7 @@ def get_schedule_from_server() -> tp.List[Pair]:
         for key, value in lesson.items():
             if key == "date":
                 date_ = dt.datetime.strptime(value, "%d.%m.%y")
+                date_ = dt.date(date_.year, date_.month, date_.day)
                 # переводим текст с датой в объект даты, для более удобной работы
                 lesson.update({key: date_})
                 continue
@@ -117,6 +121,7 @@ def main():
     parser.add_argument("--next_day", "-N",
                         action="store_true",
                         help="показать расписание на следующий день")
+
     args = parser.parse_args()
 
     display_only_next_day: bool = args.next_day
@@ -128,8 +133,15 @@ def main():
     if schedule is False:
         return
 
+    schedule = grouping_by_days(schedule)
+
+    if display_only_next_day:
+        now = dt.date.today()
+        key = sorted(list([date for date in schedule.keys() if date - now > dt.timedelta()]))[0]
+        schedule = {key: schedule[key]}
+
     # сортируем пары по дням и выводим после в виде красивой таблицы:
-    pretty_print_days(grouping_by_days(schedule))
+    pretty_print_days(schedule)
 
 
 if __name__ == "__main__":
