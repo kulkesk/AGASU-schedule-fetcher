@@ -6,6 +6,7 @@ import urllib.request as urll
 # from pprint import pprint as pp
 from operator import methodcaller
 from urllib.error import URLError
+from argparse import ArgumentParser as ap
 
 
 week_days_rus = [
@@ -92,6 +93,13 @@ def get_schedule_from_server() -> tp.List[Pair]:
 
 
 def main():
+
+    parser = ap(description="Вывод расписания на эту и следующую неделю")
+    ap.add_argument("--next_day", "-N",
+                    action="store_true", 
+                    help="показать расписание на следующий день")
+    args = parser.parse_args()
+
     # получаем расписание с сервера:
     schedule = get_schedule_from_server()
 
