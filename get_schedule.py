@@ -137,7 +137,12 @@ def main():
 
     if display_only_next_day:
         now = dt.date.today()
-        key = sorted(list([date for date in schedule.keys() if date - now > dt.timedelta()]))[0]
+        # TODO: найти способ как можно автоматизировать ну или дать возможность для изменения переменной end_of_last_pair
+        end_of_last_pair = {"hour": 13, "minute": 55}
+        if dt.datetime.now() > dt.datetime.today().replace(**end_of_last_pair):
+            key = sorted(list([date for date in schedule.keys() if date - now > dt.timedelta()]))[0]
+        else:
+            key = now
         schedule = {key: schedule[key]}
 
     # сортируем пары по дням и выводим после в виде красивой таблицы:
