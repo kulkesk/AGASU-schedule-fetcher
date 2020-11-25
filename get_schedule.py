@@ -24,6 +24,25 @@ Pair = tp.Dict[str, tp.Union[str, dt.datetime, int]]  # Формат в кото
 # для большей информации об работе библиотеке typing прошу посмотреть соответствующую документацию
 
 
+def pretty_print_days(days: tp.Dict[dt.datetime, Pair]):
+    separator_between_subjects = "-" * 10
+    separator_between_days = "=" * 10
+
+    for day, lessons in days.items():
+        print(separator_between_days, f"{week_days_rus[day.weekday()]}", separator_between_days, sep="\n")
+        for lesson in lessons:
+            subject = lesson.get("subject")
+            signature = lesson.get("signature")
+            classroom_building, classroom = lesson.get("classroom_building"), lesson.get("classroom")
+
+            print(separator_between_subjects, '\n',
+                  subject, '\n',
+                  signature, '\n',
+                  classroom, classroom_building
+                  )
+            print()
+
+
 def grouping_by_days(schedule: tp.List[Pair]) -> tp.Dict[dt.datetime, Pair]:
     """
     Группирует уроки по дате
@@ -95,9 +114,9 @@ def get_schedule_from_server() -> tp.List[Pair]:
 def main():
 
     parser = ap(description="Вывод расписания на эту и следующую неделю")
-    ap.add_argument("--next_day", "-N",
-                    action="store_true",
-                    help="показать расписание на следующий день")
+    parser.add_argument("--next_day", "-N",
+                        action="store_true",
+                        help="показать расписание на следующий день")
     args = parser.parse_args()
 
     display_only_next_day: bool = args.next_day
@@ -109,28 +128,8 @@ def main():
     if schedule is False:
         return
 
-    # сортируем пары по дням:
-    schedule = grouping_by_days(schedule)
-
-    # выводим информацию на экран терминала:
-
-    #  делаем визуальные сепараторы между днями и парами
-    separator_between_subjects = "-" * 10
-    separator_between_days = "=" * 10
-
-    for day, lessons in schedule.items():
-        print(separator_between_days, f"{week_days_rus[day.weekday()]}", separator_between_days, sep="\n")
-        for lesson in lessons:
-            subject = lesson.get("subject")
-            signature = lesson.get("signature")
-            classroom_building, classroom = lesson.get("classroom_building"), lesson.get("classroom")
-
-            print(separator_between_subjects, '\n',
-                  subject, '\n',
-                  signature, '\n',
-                  classroom, classroom_building
-                  )
-        print()
+    # сортируем пары по дням и выводим после в виде красивой таблицы:
+    pretty_print_days(grouping_by_days(schedule))
 
 
 if __name__ == "__main__":
