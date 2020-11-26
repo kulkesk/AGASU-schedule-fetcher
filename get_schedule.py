@@ -24,11 +24,10 @@ Pair = tp.Dict[str, tp.Union[str, dt.date, int]]  # Формат в которо
 
 def get_next_days_after(date: dt.date,
                         schedule: tp.Dict[dt.date, Pair],
-                        deadline: dict,
                         count: int
                         ):
     keys = sorted(list([date_schedule for date_schedule in schedule.keys()
-                        if date_schedule - date >= dt.timedelta()]))[:count]
+                        if date_schedule - date > dt.timedelta()]))[:count]
     schedule_new = {}
     for key in keys:
         schedule_new.update({key: schedule[key]})
@@ -112,7 +111,7 @@ def get_schedule_from_server() -> tp.Union[tp.List[Pair], bool]:
         for key, value in lesson.items():
             if key == "date":
                 date_ = dt.datetime.strptime(value, "%d.%m.%y")
-                date_ = dt.date(date_.year, date_.month, date_.day)
+                date_ = dt.date.fromtimestamp(date_.timestamp())
                 # переводим текст с датой в объект даты, для более удобной работы
                 lesson.update({key: date_})
                 continue
@@ -126,16 +125,7 @@ def get_schedule_from_server() -> tp.Union[tp.List[Pair], bool]:
     return schedule
 
 
-def main():
-    parser = ap(description="Вывод расписания на эту и следующую неделю")
-    parser.add_argument("--next_day", "-N",
-                        action="store_true",
-                        help="показать расписание на следующий день")
-
-    args = parser.parse_args()
-
-    display_only_next_day: bool = args.next_day
-
+def main(display_only_next_day=False):
     # получаем расписание с сервера:
     schedule = get_schedule_from_server()
 
@@ -146,7 +136,12 @@ def main():
     schedule = grouping_by_days(schedule)
 
     if display_only_next_day:
-        schedule = get_next_days_after(dt.date.today(), schedule.copy(), {"hour": 13, "minute": 55}, 1)
+        now = dt.datetime.now()
+        schedule_new = get_next_days_after(dt.date.today(), schedule, 1)
+        if now < now.replace(hour=13, minute=55):
+            schedule_new.update({dt.date.today(): schedule[dt.date.today()]})
+        schedule = schedule_new
+        del schedule_new
 
         # now = dt.date.today()
         # TODO: найти способ как можно автоматизировать ну или дать возможность для изменения переменной end_of_last_pair
@@ -158,9 +153,16 @@ def main():
         #     key = now
         # schedule = {key: schedule[key]}
 
+
     # сортируем пары по дням и выводим после в виде красивой таблицы:
     pretty_print_days(schedule)
 
 
 if __name__ == "__main__":
-    main()
+    parser = ap(description="Вывод расписания на эту и следующую неделю")
+    parser.add_argument("--next_day", "-N",
+                        action="store_true",
+                        help="показать расписание на следующий день")
+    args = parser.parse_args()
+
+    main(args.next_day)
