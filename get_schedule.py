@@ -24,6 +24,20 @@ Pair = tp.Dict[str, tp.Union[str, dt.date, int]]  # Формат в которо
 # для большей информации об работе библиотеке typing прошу посмотреть соответствующую документацию
 
 
+def get_next_days_after(date: dt.datetime,
+                        schedule: tp.Dict[dt.date, Pair],
+                        deadline: dict,
+                        count: int
+                        ):
+    if date > dt.datetime.today().replace(**deadline) and date not in schedule:
+        key = sorted(list([date_schedule for date_schedule in schedule.keys()
+                           if date_schedule - date > dt.timedelta()]))[:count]
+    else:
+        key = date
+    schedule = {key: schedule[key]}
+    return schedule
+
+
 def pretty_print_days(days: tp.Dict[dt.date, Pair]):
     """
     Выводит пары в виде таблицы
@@ -136,15 +150,18 @@ def main():
     schedule = grouping_by_days(schedule)
 
     if display_only_next_day:
-        now = dt.date.today()
+
+        schedule = get_next_days_after(dt.datetime.now(), schedule.copy(), {"hour": 13, "minute": 55}, 1)
+
+        # now = dt.date.today()
         # TODO: найти способ как можно автоматизировать ну или дать возможность для изменения переменной end_of_last_pair
-        end_of_last_pair = {"hour": 13, "minute": 55}
-        if dt.datetime.now() > dt.datetime.today().replace(**end_of_last_pair)\
-           and now not in schedule:
-            key = sorted(list([date for date in schedule.keys() if date - now > dt.timedelta()]))[0]
-        else:
-            key = now
-        schedule = {key: schedule[key]}
+        # end_of_last_pair = {"hour": 13, "minute": 55}
+        # if dt.datetime.now() > dt.datetime.today().replace(**end_of_last_pair)\
+           # and now not in schedule:
+            # key = sorted(list([date for date in schedule.keys() if date - now > dt.timedelta()]))[0]
+        # else:
+            # key = now
+        # schedule = {key: schedule[key]}
 
     # сортируем пары по дням и выводим после в виде красивой таблицы:
     pretty_print_days(schedule)
