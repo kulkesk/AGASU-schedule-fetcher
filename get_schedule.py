@@ -139,7 +139,8 @@ def main():
         now = dt.date.today()
         # TODO: найти способ как можно автоматизировать ну или дать возможность для изменения переменной end_of_last_pair
         end_of_last_pair = {"hour": 13, "minute": 55}
-        if dt.datetime.now() > dt.datetime.today().replace(**end_of_last_pair):
+        if dt.datetime.now() > dt.datetime.today().replace(**end_of_last_pair)\
+           and now not in schedule:
             key = sorted(list([date for date in schedule.keys() if date - now > dt.timedelta()]))[0]
         else:
             key = now
