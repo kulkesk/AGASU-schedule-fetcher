@@ -137,9 +137,10 @@ def main(display_only_next_day=False):
 
     if display_only_next_day:
         now = dt.datetime.now()
-        schedule_new = get_next_days_after(dt.date.today(), schedule, 1)
-        if now < now.replace(hour=13, minute=55):
-            schedule_new.update({dt.date.today(): schedule[dt.date.today()]})
+        if now < now.replace(hour=13, minute=55) and dt.date.today() in schedule:
+            schedule_new = {dt.date.today(): schedule[dt.date.today()]}
+        else:
+            schedule_new = get_next_days_after(dt.date.today(), schedule, 1)
         schedule = schedule_new
         del schedule_new
 
